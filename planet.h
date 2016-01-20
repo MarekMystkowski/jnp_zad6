@@ -7,25 +7,21 @@
 #include <memory>
 
 
-template<typename Resident_t>			// typ mieszkańców zamieszkujących planetę
 class Planet {
 	public:
-		const Resident_t& findCitizen (Citizen::id_citizen_t id) const {
-			if (map_resident.count(id) == 0) throw "nie ma takiej istoty";  // bardziej sensowny wyjątek stworzyć.
-			return *map_resident.at(id);
-		}
-	
+		const Citizen& findCitizen (Citizen::id_citizen_t id) const;
+		
 	protected: 
-		const Resident_t& register_citizen(const Resident_t& citizen);	// Rejestruje w klasie Planet
+		void register_citizen(const Citizen& citizen);	// Rejestruje w klasie Planet
 		Planet ();
 		
 	private: 
-		typedef std::shared_ptr<Resident_t> map_value_t;
+		typedef std::shared_ptr<Citizen> map_value_t;
 		std::map<Citizen::id_citizen_t, map_value_t > map_resident;
 };
 
 
-class Earth: public Planet<Human> {
+class Earth: public Planet {
 	public:
 		const Human& registerCitizen (const std::string& name);
 		static Earth& earth();
@@ -36,7 +32,7 @@ class Earth: public Planet<Human> {
 };
 
 
-class Qonos: public Planet<Klingon> {
+class Qonos: public Planet {
 	public:
 		const Klingon& registerCitizen (const std::string& name);
 		static Qonos& qonos();
@@ -47,9 +43,10 @@ class Qonos: public Planet<Klingon> {
 };
 
 
-class Bynaus: public Planet<Binar> {
+class Bynaus: public Planet{
 	public:
 		const Binar& registerCitizen (const std::string& name);
+		const Double_binar& registerCitizen (const Binar& b1, const Binar& b2);
 		static Bynaus& bynaus();
 		
 	private:

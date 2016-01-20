@@ -2,23 +2,26 @@
 
 
 // Planet:
-template<typename Resident_t>
-Planet<Resident_t>::Planet() : map_resident() {}
+Planet::Planet() : map_resident() {}
 
-template<typename Resident_t>
-const Resident_t&  Planet<Resident_t>::register_citizen (const Resident_t& citizen) {
-	Resident_t _citizen = citizen;
-	auto shar_cit = std::make_shared<Resident_t>(_citizen);
-	map_resident[citizen.id()] = shar_cit;
-	return *shar_cit;
+void Planet::register_citizen (const Citizen& citizen) {
+	Citizen _citizen = citizen; 
+	map_resident[citizen.id()] = std::make_shared<Citizen> (_citizen);
+}
+
+const Citizen& Planet::findCitizen (Citizen::id_citizen_t id) const {
+	if (map_resident.count(id) == 0) throw "nie ma takiej istoty";  // bardziej sensowny wyjątek stworzyć.
+	return *map_resident.at(id);
 }
 
 
 // Earth:
-Earth::Earth() : Planet<Human>() {}
+Earth::Earth() : Planet() {}
 			
 const Human& Earth::registerCitizen (const std::string& name) {
-	return register_citizen ( Human (name) );		// rejestracja w nadklasie.
+	auto shar_human = std::make_shared<Human> (Human(name));
+	register_citizen ( *shar_human );		// rejestracja w nadklasie.
+	return *shar_human;
 }
 
 Earth& Earth::earth() {
@@ -26,12 +29,13 @@ Earth& Earth::earth() {
 	return _earth;
 }
 
-
 // Qonos:
-Qonos::Qonos() : Planet<Klingon>() {}
+Qonos::Qonos() : Planet() {}
 
 const Klingon& Qonos::registerCitizen (const std::string& name) {
-	return register_citizen ( Klingon (name) );		// rejestracja w nadklasie.
+	auto shar_kling = std::make_shared<Klingon> (Klingon(name));
+	register_citizen ( *shar_kling );		// rejestracja w nadklasie.
+	return *shar_kling;
 }
 
 Qonos& Qonos::qonos() {
@@ -39,11 +43,20 @@ Qonos& Qonos::qonos() {
 	return _qonos;
 }
 
+
 // Bynaus:
-Bynaus::Bynaus() : Planet<Binar>() {}
+Bynaus::Bynaus() : Planet() {}
 
 const Binar& Bynaus::registerCitizen (const std::string& name) {
-	return register_citizen ( Binar (name) );		// rejestracja w nadklasie.
+	auto shar_binar = std::make_shared<Binar> (Binar(name));
+	register_citizen ( *shar_binar );		// rejestracja w nadklasie.
+	return *shar_binar;
+}
+
+const Double_binar& Bynaus::registerCitizen (const Binar& b1, const Binar& b2) {
+	auto duble_binar = Double_binar(b1, b2);
+	register_citizen ( duble_binar );		// rejestracja w nadklasie.
+	return * std::make_shared<Double_binar> (duble_binar);
 }
 
 Bynaus& Bynaus::bynaus() {

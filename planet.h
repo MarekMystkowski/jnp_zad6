@@ -5,7 +5,12 @@
 #include <string>
 #include "citizen.h"
 #include <memory>
+#include <iostream>
 
+class NotFoundCitizen : public std::exception {
+ public:
+  virtual const char* what() const throw() { return "Not found citizen"; }
+};
 
 class Planet {
 	public:

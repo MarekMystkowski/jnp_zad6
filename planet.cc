@@ -10,7 +10,7 @@ void Planet::register_citizen (const Citizen& citizen) {
 }
 
 const Citizen& Planet::findCitizen (Citizen::id_citizen_t id) const {
-	if (map_resident.count(id) == 0) throw "nie ma takiej istoty";  // bardziej sensowny wyjątek stworzyć.
+	if (map_resident.count(id) == 0) throw NotFoundCitizen();  // bardziej sensowny wyjątek stworzyć.
 	return *map_resident.at(id);
 }
 
@@ -48,9 +48,12 @@ Qonos& Qonos::qonos() {
 Bynaus::Bynaus() : Planet() {}
 
 const Binar& Bynaus::registerCitizen (const std::string& name) {
-	auto shar_binar = std::make_shared<Binar> (Binar(name));
+	auto binar = Binar(name);
+	auto shar_binar = std::make_shared<Binar> (binar);
 	register_citizen ( *shar_binar );		// rejestracja w nadklasie.
-	return *shar_binar;
+	
+	auto binar2 (binar);
+	return *std::make_shared<Binar> (binar2);
 }
 
 const Double_binar& Bynaus::registerCitizen (const Binar& b1, const Binar& b2) {

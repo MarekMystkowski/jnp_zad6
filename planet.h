@@ -51,7 +51,7 @@ class Qonos: public Planet {
 class Bynaus: public Planet{
 	public:
 		const Binar& registerCitizen (const std::string& name);
-		const Double_binar& registerCitizen (const Binar& b1, const Binar& b2);
+		const Binar& registerCitizen (const Binar& b1, const Binar& b2);
 		static Bynaus& bynaus();
 		
 	private:

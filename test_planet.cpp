@@ -16,7 +16,6 @@ int main() {
     auto& b0 = bynaus().registerCitizen("00000000");
     auto& b1 = bynaus().registerCitizen("11111111");
     
-    auto db = Double_binar(b0, b1);
     auto& binarius = bynaus().registerCitizen(b0, b1);
 	cout << "test planet: OK" << endl;
 	return 0;

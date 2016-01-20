@@ -23,6 +23,6 @@ Klingon::Klingon (const std::string& name) : Citizen (name) {};
 Binar::Binar (const std::string& name) : Citizen (name) {};
 
 // Double Binar
-Double_binar::Double_binar (const Binar& b1, const Binar& b2) :
+Binar::Binar (const Binar& b1, const Binar& b2) :
 		Citizen (b1.name() + "&" + b2.name()) {};
 

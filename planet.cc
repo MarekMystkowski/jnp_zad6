@@ -56,10 +56,10 @@ const Binar& Bynaus::registerCitizen (const std::string& name) {
 	return *std::make_shared<Binar> (binar2);
 }
 
-const Double_binar& Bynaus::registerCitizen (const Binar& b1, const Binar& b2) {
-	auto duble_binar = Double_binar(b1, b2);
-	register_citizen ( duble_binar );		// rejestracja w nadklasie.
-	return * std::make_shared<Double_binar> (duble_binar);
+const Binar& Bynaus::registerCitizen (const Binar& b1, const Binar& b2) {
+	auto binar = Binar(b1, b2);
+	register_citizen (binar);		// rejestracja w nadklasie.
+	return * std::make_shared<Binar> (binar);
 }
 
 Bynaus& Bynaus::bynaus() {

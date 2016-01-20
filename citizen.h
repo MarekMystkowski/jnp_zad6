@@ -34,11 +34,7 @@ class Klingon: public Citizen {
 class Binar: public Citizen {
 	public:
 		Binar (const std::string& name);
+		Binar (const Binar& b1, const Binar& b2);
 };
 
-// Klasa binarów dwu osobowych
-class Double_binar: public Citizen {
-	public:
-		Double_binar (const Binar& b1, const Binar& b2);
-};
 #endif /* defined(__gsb__citizen__) */

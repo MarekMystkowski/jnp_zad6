@@ -4,7 +4,7 @@
 
 using namespace std;
 int main() {
-
+	cout << "start testu planet" << endl;
 	auto jan = earth().registerCitizen("Jan");
 	auto ala = earth().registerCitizen("Ala");
 	auto x = earth().findCitizen(jan.id());
@@ -18,6 +18,6 @@ int main() {
     
     auto db = Double_binar(b0, b1);
     auto& binarius = bynaus().registerCitizen(b0, b1);
-	cout << "test ok." << endl;
+	cout << "test planet: OK" << endl;
 	return 0;
 }

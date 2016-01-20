@@ -5,6 +5,7 @@
 using namespace std;
 
 int main() {
+	cout << "start testu ludzi" << endl;
 	Human jan("jan");
 	assert (jan.name() == "jan");
 	auto ola = Human( "ola");
@@ -16,6 +17,6 @@ int main() {
 	auto db = Double_binar(b0, b1);
 	assert (db.name() == "0&1");
 	
-	cout << "test ok." << endl;
+	cout << "test ludzi: OK" << endl;
 	return 0;
 }

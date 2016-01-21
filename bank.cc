@@ -43,6 +43,14 @@ double Bank::transferCharge(account_type type) const {
 	return parameters[(int) type][(int) account_parameters::TRANSFER_CHARGE];
 }
 
+double Bank::interestRate(account_type type) const {
+	return parameters[(int) type][(int) account_parameters::INTEREST_RATE];
+}
+
+double Bank::monthlyCharge(account_type type) const {
+	return parameters[(int) type][(int) account_parameters::MONTHLY_CHARGE];
+}
+
 // Do informacji o aktualnym kursie:
 double Bank::exchange_buying_rate (Currency curr) const{
 	return my_exchange_tabl.exchange_buying_rate (curr);
@@ -159,7 +167,7 @@ Bank& BankBuilder::createBank() const {
 
 // Konta:
 Account::Account (const Bank& my_bank, const Citizen& citi, Currency curr)
-	: bank(my_bank), currency(curr), citizen(citi), my_balance(0.0), my_id(new_id++) {}
+	: bank(my_bank), currency(curr), my_balance(0.0), citizen(citi), my_id(new_id++) {}
 
 Account::id_acc_t Account::id() const {
 	return my_id;
@@ -169,18 +177,50 @@ double Account::transferCharge() const {
 	return 0.0;
 }
 
+double Account::interestRate() const {
+	return 0.0;
+}
+
+double Account::monthlyCharge() const {
+	return 0.0;
+}
+
+void Account::notify() {
+	double x = my_balance * interestRate();
+	
+	my_balance += x -monthlyCharge();
+	my_history += std::to_string(interstellarClock().date()) + " " + std::to_string(x) + name_currency(currency) + " INTEREST\n";
+	my_history += std::to_string(interstellarClock().date()) + " -" + std::to_string(monthlyCharge()) + name_currency(currency) + " CHARGE\n";
+		
+}
+
 std::string Account::balance() const {
 	std::string s =  std::to_string(my_balance) + name_currency(currency);
 	return s;
 }
 
+const std::string& Account::history() const {
+	return my_history;
+}
+
+std::ostream& operator<<(std::ostream& os, const Account& acc) {
+	os << "ACCOUNT: " << acc.id() << std::endl;
+	os << "balance: " << acc.balance() <<std::endl;
+	os << "history:" << std::endl << acc.history() <<std::endl;
+	return os;
+}
+
 void Account::deposit(double amount) {
 	my_balance += amount;
+	my_history += std::to_string(interstellarClock().date()) + " " + std::to_string(amount) + name_currency(currency) + " ";
+	my_history += "DEPOSIT\n";
 }
 
 void Account::withdraw(double amount) {
 	if (amount > my_balance ) throw "za malo kasy";
 	my_balance -= amount;
+	my_history += std::to_string(interstellarClock().date()) + " -" + std::to_string(amount) + name_currency(currency) + " ";
+	my_history += "WITHDRAWAL\n";
 }
 
 void Account::deposit(struct payment_format data) {
@@ -211,7 +251,12 @@ void Account::transfer(double amount, Account::id_acc_t recipient, const std::st
 	
 	reci.my_balance += payment;
 	
-	// Zarejestrowanie w histori.																					// Napisać
+	// Zarejestrowanie w historii.
+	my_history += std::to_string(interstellarClock().date()) + " -" + std::to_string(amount) + name_currency(currency) + " ";
+	my_history += "TRANSFER (" + title + ") FROM: " + std::to_string(id()) + " TO: " + std::to_string(reci.id()) + "\n";
+	
+	reci.my_history += std::to_string(interstellarClock().date()) + " " + std::to_string(amount) + name_currency(currency) + " ";
+	reci.my_history += "TRANSFER (" + title + ") FROM: " + std::to_string(id()) + " TO: " + std::to_string(reci.id()) + "\n";
 	
 } 
 
@@ -228,6 +273,14 @@ double CheckingAccount::transferCharge() const {
 	return bank.transferCharge(account_type::CHECKING);
 }
 
+double CheckingAccount::interestRate() const {
+	return bank.interestRate(account_type::CHECKING);
+}
+
+double CheckingAccount::monthlyCharge() const {
+	return bank.monthlyCharge(account_type::CHECKING);
+}
+
 // SavingAccount:
 SavingAccount::SavingAccount(const Bank& my_bank, const Citizen& citizen) :
                  Account (my_bank, citizen, Currency::ENC){}
@@ -236,12 +289,28 @@ double SavingAccount::transferCharge() const {
 	return bank.transferCharge(account_type::SAVING);
 }
 
+double SavingAccount::interestRate() const {
+	return bank.interestRate(account_type::SAVING);
+}
+
+double SavingAccount::monthlyCharge() const {
+	return bank.monthlyCharge(account_type::SAVING);
+}
+
 // CurrencyAccount:
 CurrencyAccount::CurrencyAccount(const Bank& my_bank, const Citizen& citizen,Currency curr) :
                  Account (my_bank, citizen, curr){}
 
 double CurrencyAccount::transferCharge() const {
 	return bank.transferCharge(account_type::CURRENCY);
+}
+
+double CurrencyAccount::interestRate() const {
+	return bank.interestRate(account_type::CURRENCY);
+}
+
+double CurrencyAccount::monthlyCharge() const {
+	return bank.monthlyCharge(account_type::CURRENCY);
 }
 
 void CurrencyAccount::deposit(struct payment_format data) {
@@ -253,8 +322,11 @@ void CurrencyAccount::deposit(struct payment_format data) {
 		amount *= bank.exchange_selling_rate(data.curr);
 	}
 	amount /= bank.exchange_buying_rate(currency);
-
-	Account::deposit(amount);
+	
+	my_history += std::to_string(interstellarClock().date()) + " " + std::to_string(data.amount) + name_currency(data.curr) + " ";
+	my_history += "DEPOSIT\n";
+	my_balance += amount;
+	
 }
 
 void CurrencyAccount::withdraw(struct payment_format data) {
@@ -265,8 +337,11 @@ void CurrencyAccount::withdraw(struct payment_format data) {
 	if (data.curr != Currency::ENC) {
 		amount /= bank.exchange_buying_rate(data.curr);
 	}
-
-	Account::withdraw(amount);
+	if (amount > my_balance ) throw "za malo kasy";
+	my_balance -= amount;
+	
+	my_history += std::to_string(interstellarClock().date()) + " " + std::to_string(data.amount) + name_currency(data.curr) + " ";
+	my_history += "WITHDRAWAL\n";
 }
 
 // Gkb:

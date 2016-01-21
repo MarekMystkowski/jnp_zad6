@@ -23,8 +23,11 @@ test_ludzi: test_ludzi.o citizen.o
 
 test_bank.o: test_bank.cpp bank.h
 	g++ -Wall -std=c++11 test_bank.cpp -c -o test_bank.o
-test_bank: test_bank.o citizen.o planet.o bank.o
-	g++ test_bank.o citizen.o planet.o bank.o -o test_bank
+test_bank: test_bank.o citizen.o planet.o bank.o interstellarclock.o
+	g++ test_bank.o citizen.o planet.o bank.o interstellarclock.o -o test_bank
+
+interstellarclock.o: interstellarclock.cpp interstellarclock.h
+	g++ -Wall -std=c++11 interstellarclock.cpp -c -o interstellarclock.o
 
 rm:
-	rm citizen.o test_ludzi.o test_ludzi planet.o test_planet.o test_planet bank.o test_bank.o test_bank
+	rm citizen.o test_ludzi.o test_ludzi planet.o test_planet.o test_planet bank.o test_bank.o test_bank interstellarclock.o

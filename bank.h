@@ -8,7 +8,8 @@
 #include <initializer_list>
 #include <tuple>
 #include "citizen.h"
-
+#include <iostream>
+#include "interstellarclock.h"
 
 #define  NUMBER_OF_TYPES_OF_ACCOUNTS 3
 #define  NUMBER_OF_PARAMERERS_OF_ACCOUNTS 3
@@ -55,6 +56,9 @@ class Bank {
 		
 		// Zwraca opłąty naliczane przez bank
 		double transferCharge(account_type) const;
+		double interestRate(account_type) const;
+		double monthlyCharge(account_type) const;
+
 		
 		// Zwracanie kursu waluty do ENC:
 		double exchange_buying_rate (Currency curr) const;
@@ -112,18 +116,23 @@ class Account {
 		virtual void withdraw(double);
 		virtual void deposit(struct payment_format);
 		virtual void withdraw(struct payment_format);
+		void notify();
+		
+		friend std::ostream& operator<<(std::ostream& os, const Account& acc);
 		
 		
 	protected:
 		Account (const Bank& my_bank, const Citizen& citizen, Currency curr );
 		std::string my_history;
+		Bank bank;
 		virtual double transferCharge() const;
-		const Bank& bank;
+		virtual double interestRate() const;
+		virtual double monthlyCharge() const;
 		Currency currency;
+		double my_balance;
 		
 	private:
 		const Citizen& citizen;
-		double my_balance;
 		id_acc_t my_id;
 		
 };
@@ -131,18 +140,24 @@ class Account {
 class CheckingAccount : public Account {
 	public:
 		CheckingAccount(const Bank& my_bank, const Citizen& citizen);
-		virtual double transferCharge() const;
 		virtual void withdraw(double x) {Account::withdraw(x);}
 		virtual void deposit(double x) {Account::deposit(x);}
 		virtual void withdraw(struct payment_format x) {Account::withdraw(x);}
 		virtual void deposit(struct payment_format x) {Account::deposit(x);}
+		
+	private: 
+		virtual double transferCharge() const;
+		virtual double interestRate() const;
+		virtual double monthlyCharge() const;
 };
 
 class SavingAccount : public Account {
 	public:
 		SavingAccount(const Bank& my_bank, const Citizen& citizen);
-		virtual double transferCharge() const;
 	private:
+		virtual double transferCharge() const;
+		virtual double interestRate() const;
+		virtual double monthlyCharge() const;
 		virtual void deposit(double){}
 		virtual void withdraw(double){}
 		virtual void deposit(struct payment_format){}
@@ -153,11 +168,14 @@ class SavingAccount : public Account {
 class CurrencyAccount : public Account {
 	public:
 		CurrencyAccount(const Bank& my_bank, const Citizen& citizen, Currency curr);
-		virtual double transferCharge() const;
 		virtual void withdraw(double x) {Account::withdraw(x);}
 		virtual void deposit(double x) {Account::deposit(x);}
 		virtual void deposit(struct payment_format);
 		virtual void withdraw(struct payment_format);
+	private:
+		virtual double transferCharge() const;
+		virtual double interestRate() const;
+		virtual double monthlyCharge() const;
 };
 
 class Gkb {

@@ -22,6 +22,8 @@ enum class Currency { ENC = 0, BIC = 1, DIL = 2, LIT = 3 };
 
 
 class CheckingAccount;
+class SavingAccount;
+class CurrencyAccount;
 class Account;
 
 class Bank {
@@ -30,9 +32,9 @@ class Bank {
 				par[NUMBER_OF_TYPES_OF_ACCOUNTS][NUMBER_OF_PARAMERERS_OF_ACCOUNTS]);
 		
 		// Otwieranie kont:
-		Account& openCheckingAccount(const Citizen& citizen) const;
-		Account& openSavingAccount(const Citizen& citizen) const;	
-		Account& openCurrencyAccount(const Citizen& citizen, Currency curr) const;
+		CheckingAccount& openCheckingAccount(const Citizen& citizen) const;
+		SavingAccount& openSavingAccount(const Citizen& citizen) const;	
+		CurrencyAccount& openCurrencyAccount(const Citizen& citizen, Currency curr) const;
 		
 		// Zwraca opłąty naliczane przez bank
 		double transferCharge(account_type) const;
@@ -122,6 +124,10 @@ class CheckingAccount : public Account {
 	public:
 		CheckingAccount(const Bank& my_bank, const Citizen& citizen);
 		virtual double transferCharge() const;
+		virtual void withdraw(double x) {Account::withdraw(x);}
+		virtual void deposit(double x) {Account::deposit(x);}
+		virtual void withdraw(struct payment_format x) {Account::withdraw(x);}
+		virtual void deposit(struct payment_format x) {Account::deposit(x);}
 };
 
 class SavingAccount : public Account {
@@ -140,6 +146,8 @@ class CurrencyAccount : public Account {
 	public:
 		CurrencyAccount(const Bank& my_bank, const Citizen& citizen, Currency curr);
 		virtual double transferCharge() const;
+		virtual void withdraw(double x) {Account::withdraw(x);}
+		virtual void deposit(double x) {Account::deposit(x);}
 		virtual void deposit(struct payment_format);
 		virtual void withdraw(struct payment_format);
 };
@@ -152,16 +160,18 @@ class Gkb {
 		Account& find_account(Account::id_acc_t);
 		
 		// Do tworzenia kont:
-		Account& create_checking_account(const Bank& bank, const Citizen& citizen);
-		Account& create_saving_account(const Bank& bank, const Citizen& citizen);
-		Account& create_currency_account(const Bank& bank, const Citizen& citizen, Currency curr);
+		CheckingAccount& create_checking_account(const Bank& bank, const Citizen& citizen);
+		SavingAccount& create_saving_account(const Bank& bank, const Citizen& citizen);
+		CurrencyAccount& create_currency_account(const Bank& bank, const Citizen& citizen, Currency curr);
 		
 	private:
 		Gkb(){}
 		Gkb( const Gkb & ){}
 		
 		// do trzymania wszystkich kont:
-		std::map<Account::id_acc_t, std::shared_ptr<Account> > map_account;
+		std::map<Account::id_acc_t, std::shared_ptr<CheckingAccount> > map_checking_account;
+		std::map<Account::id_acc_t, std::shared_ptr<SavingAccount> > map_saving_account;
+		std::map<Account::id_acc_t, std::shared_ptr<CurrencyAccount> > map_currency_account;
 };
 #define gkb() Gkb::gkb()
 

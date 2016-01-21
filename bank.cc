@@ -1,6 +1,5 @@
 #include "bank.h"
 #include <memory>
-#include <iostream>
 static Account::id_acc_t new_id = 0;
 
 // pomocnicze funkcje:
@@ -46,31 +45,33 @@ Bank& Bank::exchangeTable() {
 }
 
 Bank& Bank::exchangeRate(Currency curr) {
-	is_fixed_exchange = true;
-	currently_set_exchange = curr;
+	//is_fixed_exchange = true;
+	//currently_set_exchange = curr;
 	return *this;
 }
 
 Bank& Bank::buyingRate(double v) {
+	if(not is_fixed_exchange) return *this;
 	table_of_exchange_buying_rates[(int)currently_set_exchange] = v;
 	return *this;
 }
 
 Bank& Bank::sellingRate(double v) {
+	if(not is_fixed_exchange) return *this;
 	table_of_exchange_selling_rates[(int)currently_set_exchange] = v;
 	return *this;
 }
 
 // Otwieranie konto:
-Account& Bank::openCheckingAccount(const Citizen& citizen) const {
+CheckingAccount& Bank::openCheckingAccount(const Citizen& citizen) const {
 	return gkb().create_checking_account(*this, citizen);	
 }
 
-Account& Bank::openSavingAccount(const Citizen& citizen) const {
+SavingAccount& Bank::openSavingAccount(const Citizen& citizen) const {
 	return gkb().create_saving_account(*this, citizen);	
 }
 
-Account& Bank::openCurrencyAccount(const Citizen& citizen, Currency curr) const {
+CurrencyAccount& Bank::openCurrencyAccount(const Citizen& citizen, Currency curr) const {
 	return gkb().create_currency_account(*this, citizen, curr);	
 }
 
@@ -223,7 +224,6 @@ void CurrencyAccount::deposit(struct payment_format data) {
 }
 
 void CurrencyAccount::withdraw(struct payment_format data) {
-	std::cerr << "JEST TU" << std::endl;
 	if (data.curr == currency) return Account::withdraw(data.amount);
 	
 	// Przewalutowanie
@@ -247,31 +247,35 @@ Gkb& Gkb::gkb() {
 }
 
 bool Gkb::is_account(Account::id_acc_t id) {
-	return (map_account.count(id) != 0);
+	return (map_checking_account.count(id) != 0 ||
+	        map_saving_account.count(id) != 0 ||
+	        map_currency_account.count(id) != 0);
 }
 
 Account& Gkb::find_account(Account::id_acc_t id) {
-	if (map_account.count(id) == 0) throw "nie ma konta o tym id";					 // bardziej sensowny wyjątek stworzyć.
-	return *map_account.at(id);
+	if (map_checking_account.count(id)) return *map_checking_account.at(id);
+	if (map_saving_account.count(id))   return *map_saving_account.at(id);
+	if (map_currency_account.count(id)) return *map_currency_account.at(id);
+	throw "nie ma konta o tym id";					 // bardziej sensowny wyjątek stworzyć.
 }
 
-Account& Gkb::create_checking_account(const Bank& bank, const Citizen& citizen) {
+CheckingAccount& Gkb::create_checking_account(const Bank& bank, const Citizen& citizen) {
 	CheckingAccount _checking_account(bank, citizen);
-	auto shar = std::make_shared<Account> (_checking_account);
-	map_account[_checking_account.id()] = shar;
+	auto shar = std::make_shared<CheckingAccount> (_checking_account);
+	map_checking_account[_checking_account.id()] = shar;
 	return *shar;
 }
 
-Account& Gkb::create_saving_account(const Bank& bank, const Citizen& citizen) {
+SavingAccount& Gkb::create_saving_account(const Bank& bank, const Citizen& citizen) {
 	SavingAccount _saving_account(bank, citizen);
-	auto shar = std::make_shared<Account> (_saving_account);
-	map_account[_saving_account.id()] = shar;
+	auto shar = std::make_shared<SavingAccount> (_saving_account);
+	map_saving_account[_saving_account.id()] = shar;
 	return *shar;
 }
 
-Account& Gkb::create_currency_account(const Bank& bank, const Citizen& citizen, Currency curr){
+CurrencyAccount& Gkb::create_currency_account(const Bank& bank, const Citizen& citizen, Currency curr){
 	CurrencyAccount _currency_account(bank, citizen, curr);
-	auto shar = std::make_shared<Account> (_currency_account);
-	map_account[_currency_account.id()] = shar;
+	auto shar = std::make_shared<CurrencyAccount> (_currency_account);
+	map_currency_account[_currency_account.id()] = shar;
 	return *shar;
 }

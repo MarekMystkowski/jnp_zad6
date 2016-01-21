@@ -26,6 +26,23 @@ class SavingAccount;
 class CurrencyAccount;
 class Account;
 
+class ExchangeTable {
+	public: 
+		ExchangeTable();
+		ExchangeTable& exchangeRate(Currency curr);
+        ExchangeTable& buyingRate(double);
+        ExchangeTable& sellingRate(double);
+        double exchange_buying_rate (Currency curr) const;
+		double exchange_selling_rate (Currency curr) const;
+		
+
+	private:
+		double tab_selling_rates[NUMBER_OF_CURRENCY];
+		double tab_buying_rates[NUMBER_OF_CURRENCY];
+		Currency currently_set_exchange;
+		bool is_fixed_exchange;
+};
+
 class Bank {
 	public :
 		Bank (const std::string& name, parameter_types const 
@@ -43,23 +60,14 @@ class Bank {
 		double exchange_buying_rate (Currency curr) const;
 		double exchange_selling_rate (Currency curr) const;
 		
-		// Do edycji tabeli kursów:
-		Bank& exchangeTable();
-        Bank& exchangeRate(Currency curr);
-        Bank& buyingRate(double);
-        Bank& sellingRate(double);
-		
+		ExchangeTable& exchangeTable();
+        		
 	private:
 		std::string bank_name;
 		parameter_types parameters[NUMBER_OF_TYPES_OF_ACCOUNTS]
 		                                 [NUMBER_OF_PARAMERERS_OF_ACCOUNTS];
 		
-		double table_of_exchange_selling_rates[NUMBER_OF_CURRENCY];
-		double table_of_exchange_buying_rates[NUMBER_OF_CURRENCY];
-		
-		// Do ustalania nowych wartości:
-		Currency currently_set_exchange;
-		bool is_fixed_exchange;
+		ExchangeTable my_exchange_tabl;
 };
 
 class BankBuilder {
@@ -98,7 +106,7 @@ class Account {
 		id_acc_t id() const;
 		virtual void transfer(double, id_acc_t, const std::string& title); 
 		virtual void transfer(double a, id_acc_t);
-		std::string& balance() const;
+		std::string balance() const;
 		const std::string& history() const;
 		virtual void deposit(double);
 		virtual void withdraw(double);

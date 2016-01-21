@@ -10,6 +10,24 @@ static void default_account_parameters(parameter_types par[NUMBER_OF_TYPES_OF_AC
 			par[i][j] = 0.0;
 }
 
+std::string name_currency (Currency curr) {
+	std::string s;
+	switch(curr) {
+		case Currency::ENC:
+			s = "ENC";
+			break;
+		case Currency::BIC:
+			s = "BIC";
+			break;
+		case Currency::DIL:
+			s = "DIL";
+			break;
+		case Currency::LIT:
+			s = "LIT";
+			break;
+	}
+	return s;
+}
 
 // Bank
 Bank::Bank (const std::string& name,
@@ -19,11 +37,6 @@ Bank::Bank (const std::string& name,
 	for (int i = 0; i < 3; i++)
 		for (int j = 0; j < 4; j++) parameters[i][j] = par[i][j];
 	
-	// Ustawianie domyślnych wartości walut.
-	for (int i = 0; i < NUMBER_OF_CURRENCY; i++) {
-		table_of_exchange_buying_rates[i] = 1.0;
-		table_of_exchange_selling_rates[i] = 1.0;
-	}
 }
 
 double Bank::transferCharge(account_type type) const {
@@ -32,33 +45,49 @@ double Bank::transferCharge(account_type type) const {
 
 // Do informacji o aktualnym kursie:
 double Bank::exchange_buying_rate (Currency curr) const{
-	return table_of_exchange_buying_rates[(int)curr];
+	return my_exchange_tabl.exchange_buying_rate (curr);
 }
 double Bank::exchange_selling_rate (Currency curr) const{
-	return table_of_exchange_selling_rates[(int)curr];
+	return my_exchange_tabl.exchange_selling_rate (curr);
 }
 
 // metody do zmieniania kusru walut:
-Bank& Bank::exchangeTable() {
-	is_fixed_exchange = false;
+ExchangeTable& Bank::exchangeTable() {
+	return my_exchange_tabl;
+}
+
+ExchangeTable::ExchangeTable() {
+	// Ustawianie domyślnych wartości walut.
+	for (int i = 0; i < NUMBER_OF_CURRENCY; i++) {
+		tab_buying_rates[i] = 1.0;
+		tab_selling_rates[i] = 1.0;
+	}
+}
+
+// Do informacji o aktualnym kursie:
+double ExchangeTable::exchange_buying_rate (Currency curr) const{
+	return tab_buying_rates[(int)curr];
+}
+
+double ExchangeTable::exchange_selling_rate (Currency curr) const{
+	return tab_selling_rates[(int)curr];
+}
+
+ExchangeTable& ExchangeTable::exchangeRate(Currency curr) {
+	is_fixed_exchange = true;
+	currently_set_exchange = curr;
 	return *this;
 }
 
-Bank& Bank::exchangeRate(Currency curr) {
-	//is_fixed_exchange = true;
-	//currently_set_exchange = curr;
-	return *this;
-}
-
-Bank& Bank::buyingRate(double v) {
+ExchangeTable& ExchangeTable::buyingRate(double v) {
 	if(not is_fixed_exchange) return *this;
-	table_of_exchange_buying_rates[(int)currently_set_exchange] = v;
+	tab_buying_rates[(int)currently_set_exchange] = v;
 	return *this;
 }
 
-Bank& Bank::sellingRate(double v) {
+ExchangeTable& ExchangeTable::sellingRate(double v) {
 	if(not is_fixed_exchange) return *this;
-	table_of_exchange_selling_rates[(int)currently_set_exchange] = v;
+	tab_selling_rates[(int)currently_set_exchange] = v;
 	return *this;
 }
 
@@ -138,6 +167,11 @@ Account::id_acc_t Account::id() const {
 
 double Account::transferCharge() const {
 	return 0.0;
+}
+
+std::string Account::balance() const {
+	std::string s =  std::to_string(my_balance) + name_currency(currency);
+	return s;
 }
 
 void Account::deposit(double amount) {

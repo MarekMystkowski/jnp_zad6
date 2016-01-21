@@ -167,7 +167,8 @@ Bank& BankBuilder::createBank() const {
 
 // Konta:
 Account::Account (const Bank& my_bank, const Citizen& citi, Currency curr)
-	: bank(my_bank), currency(curr), my_balance(0.0), citizen(citi), my_id(new_id++) {}
+	: bank(my_bank), currency(curr), my_balance(0.0), citizen(citi), my_id(new_id++) {
+}
 
 Account::id_acc_t Account::id() const {
 	return my_id;
@@ -190,8 +191,7 @@ void Account::notify() {
 	
 	my_balance += x -monthlyCharge();
 	my_history += std::to_string(interstellarClock().date()) + " " + std::to_string(x) + name_currency(currency) + " INTEREST\n";
-	my_history += std::to_string(interstellarClock().date()) + " -" + std::to_string(monthlyCharge()) + name_currency(currency) + " CHARGE\n";
-		
+	my_history += std::to_string(interstellarClock().date()) + " -" + std::to_string(monthlyCharge()) + name_currency(currency) + " CHARGE\n";		
 }
 
 std::string Account::balance() const {
@@ -297,7 +297,7 @@ double SavingAccount::monthlyCharge() const {
 	return bank.monthlyCharge(account_type::SAVING);
 }
 
-// CurrencyAccount:
+// Account:
 CurrencyAccount::CurrencyAccount(const Bank& my_bank, const Citizen& citizen,Currency curr) :
                  Account (my_bank, citizen, curr){}
 
@@ -340,7 +340,7 @@ void CurrencyAccount::withdraw(struct payment_format data) {
 	if (amount > my_balance ) throw "za malo kasy";
 	my_balance -= amount;
 	
-	my_history += std::to_string(interstellarClock().date()) + " " + std::to_string(data.amount) + name_currency(data.curr) + " ";
+	my_history += std::to_string(interstellarClock().date()) + " -" + std::to_string(data.amount) + name_currency(data.curr) + " ";
 	my_history += "WITHDRAWAL\n";
 }
 
@@ -372,6 +372,7 @@ CheckingAccount& Gkb::create_checking_account(const Bank& bank, const Citizen& c
 	CheckingAccount _checking_account(bank, citizen);
 	auto shar = std::make_shared<CheckingAccount> (_checking_account);
 	map_checking_account[_checking_account.id()] = shar;
+	interstellarClock().registration_account(&find_account(_checking_account.id()));
 	return *shar;
 }
 
@@ -379,6 +380,7 @@ SavingAccount& Gkb::create_saving_account(const Bank& bank, const Citizen& citiz
 	SavingAccount _saving_account(bank, citizen);
 	auto shar = std::make_shared<SavingAccount> (_saving_account);
 	map_saving_account[_saving_account.id()] = shar;
+	interstellarClock().registration_account(&find_account(_saving_account.id()));
 	return *shar;
 }
 
@@ -386,5 +388,6 @@ CurrencyAccount& Gkb::create_currency_account(const Bank& bank, const Citizen& c
 	CurrencyAccount _currency_account(bank, citizen, curr);
 	auto shar = std::make_shared<CurrencyAccount> (_currency_account);
 	map_currency_account[_currency_account.id()] = shar;
+	interstellarClock().registration_account(&find_account(_currency_account.id()));
 	return *shar;
 }

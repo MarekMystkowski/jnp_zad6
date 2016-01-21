@@ -124,7 +124,7 @@ class Account {
 	protected:
 		Account (const Bank& my_bank, const Citizen& citizen, Currency curr );
 		std::string my_history;
-		Bank bank;
+		const Bank& bank;
 		virtual double transferCharge() const;
 		virtual double interestRate() const;
 		virtual double monthlyCharge() const;
@@ -133,7 +133,7 @@ class Account {
 		
 	private:
 		const Citizen& citizen;
-		id_acc_t my_id;
+		const id_acc_t my_id;
 		
 };
 
@@ -172,6 +172,7 @@ class CurrencyAccount : public Account {
 		virtual void deposit(double x) {Account::deposit(x);}
 		virtual void deposit(struct payment_format);
 		virtual void withdraw(struct payment_format);
+	
 	private:
 		virtual double transferCharge() const;
 		virtual double interestRate() const;

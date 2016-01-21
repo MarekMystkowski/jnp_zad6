@@ -41,17 +41,20 @@ int main() {
     auto& raisaBank = gkb().bankApplication()
         .name("Raisa Bank")
         .createBank();
-
+        
     // możemy otwierać różne rodzaje kont dla obywateli Zjednoczonej Federacji Planet
     auto& picardsChecking = enterpriseBank.openCheckingAccount(captain);
     auto& picardsSaving = enterpriseBank.openSavingAccount(captain);
     auto& binariusCurrency = raisaBank.openCurrencyAccount(binarius, Currency::DIL);
-
+	
+	cerr << "ID: " << picardsChecking.id() << endl;
+	cerr << "ID: " << picardsSaving.id() << endl;
+	cerr << "ID: " << binariusCurrency.id() << endl;
     // operacje na koncie rozliczeniowym
     picardsChecking.deposit(101.5);
     picardsChecking.withdraw({1.5, Currency::ENC});
     picardsChecking.transfer(100, picardsSaving.id());
-
+    
     // operacje na koncie oszczędnościowym
     picardsSaving.transfer(49.99, binariusCurrency.id(), "for binarius");
 
@@ -69,7 +72,7 @@ int main() {
     
     binariusCurrency.withdraw({1, Currency::ENC});
     binariusCurrency.withdraw({1.0, Currency::DIL});
-
+	
     // stan konta rozliczeniowego Picarda
     ::std::cout << picardsChecking.balance() << ::std::endl;
     

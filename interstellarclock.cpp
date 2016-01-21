@@ -1,4 +1,6 @@
 #include "interstellarclock.h"
+#include <iostream>
+using namespace std;
 
 unsigned long long InterstellarClock::hours() const {
     return _hours;
@@ -14,6 +16,9 @@ Date InterstellarClock::date() const {
 
 InterstellarClock& InterstellarClock::nextHour() {
     _hours++;
+    if (_hours % (HOURS_IN_DAY * DAYS_IN_MONTH) == 0) {
+		notify();
+	}
     return *this;
 }
 
@@ -33,6 +38,7 @@ InterstellarClock& interstellarClock() {
     static InterstellarClock interstellarClock;
     return interstellarClock;
 }
+
 
 void InterstellarClock::registration_account(Account* acc) {
 	 observers.insert(std::make_pair(observers.size(), acc));

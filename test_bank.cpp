@@ -33,6 +33,10 @@ int main() {
     auto& raisaBank = gkb().bankApplication()
         .name("Raisa Bank")
         .createBank();
+        
+    auto& picardsChecking = enterpriseBank.openCheckingAccount(captain);
+    
+    assert (picardsChecking.id() == 0);
     
 	cout << "test banku: OK" << endl;
 	return 0;

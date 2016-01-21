@@ -5,6 +5,8 @@
 #include <string>
 #include <map>
 #include <memory>
+#include <initializer_list>
+#include <tuple>
 #include "citizen.h"
 
 
@@ -83,17 +85,23 @@ class BankBuilder {
 		Bank& createBank() const;
 };
 
-
+struct payment_format {
+	double amount;
+	Currency curr;
+};
 // Klasy związane z kontami:
 class Account {
 	public:
 		typedef int id_acc_t;
 		id_acc_t id() const;
 		virtual void transfer(double, id_acc_t, const std::string& title); 
+		virtual void transfer(double a, id_acc_t);
 		std::string& balance() const;
 		const std::string& history() const;
 		virtual void deposit(double);
 		virtual void withdraw(double);
+		virtual void deposit(struct payment_format);
+		virtual void withdraw(struct payment_format);
 		
 		
 	protected:
@@ -101,10 +109,10 @@ class Account {
 		std::string my_history;
 		virtual double transferCharge() const;
 		const Bank& bank;
-	
+		Currency currency;
+		
 	private:
 		const Citizen& citizen;
-		Currency currency;
 		double my_balance;
 		id_acc_t my_id;
 		
@@ -123,6 +131,8 @@ class SavingAccount : public Account {
 	private:
 		virtual void deposit(double){}
 		virtual void withdraw(double){}
+		virtual void deposit(struct payment_format){}
+		virtual void withdraw(struct payment_format){}
 
 };
 
@@ -130,6 +140,8 @@ class CurrencyAccount : public Account {
 	public:
 		CurrencyAccount(const Bank& my_bank, const Citizen& citizen, Currency curr);
 		virtual double transferCharge() const;
+		virtual void deposit(struct payment_format);
+		virtual void withdraw(struct payment_format);
 };
 
 class Gkb {

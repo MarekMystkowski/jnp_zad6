@@ -1,5 +1,6 @@
 #include "bank.h"
 #include <memory>
+#include <iostream>
 static Account::id_acc_t new_id = 0;
 
 // pomocnicze funkcje:
@@ -128,7 +129,7 @@ Bank& BankBuilder::createBank() const {
 
 // Konta:
 Account::Account (const Bank& my_bank, const Citizen& citi, Currency curr)
-	: bank(my_bank), citizen(citi), currency(curr), my_balance(0.0), my_id(new_id++) {}
+	: bank(my_bank), currency(curr), citizen(citi), my_balance(0.0), my_id(new_id++) {}
 
 Account::id_acc_t Account::id() const {
 	return my_id;
@@ -145,6 +146,16 @@ void Account::deposit(double amount) {
 void Account::withdraw(double amount) {
 	if (amount > my_balance ) throw "za malo kasy";
 	my_balance -= amount;
+}
+
+void Account::deposit(struct payment_format data) {
+	if (data.curr != currency) throw "Zły typ waluty";
+	deposit(data.amount);
+}
+
+void Account::withdraw(struct payment_format data) {
+	if (data.curr != currency) throw "Zły typ waluty";
+	withdraw(data.amount);
 }
 
 void Account::transfer(double amount, Account::id_acc_t recipient, const std::string& title) {
@@ -170,6 +181,10 @@ void Account::transfer(double amount, Account::id_acc_t recipient, const std::st
 } 
 
 
+void Account::transfer(double amount, Account::id_acc_t recipient) {
+	transfer(amount, recipient, "");
+}
+
 // CheckingAccount:
 CheckingAccount::CheckingAccount(const Bank& my_bank, const Citizen& citizen) :
                  Account (my_bank, citizen, Currency::ENC){}
@@ -194,6 +209,31 @@ double CurrencyAccount::transferCharge() const {
 	return bank.transferCharge(account_type::CURRENCY);
 }
 
+void CurrencyAccount::deposit(struct payment_format data) {
+	if (data.curr == currency) return Account::deposit(data.amount);
+	
+	// Przewalutowanie
+	double amount = data.amount;
+	if (data.curr != Currency::ENC) {
+		amount *= bank.exchange_selling_rate(data.curr);
+	}
+	amount /= bank.exchange_buying_rate(currency);
+
+	Account::deposit(amount);
+}
+
+void CurrencyAccount::withdraw(struct payment_format data) {
+	std::cerr << "JEST TU" << std::endl;
+	if (data.curr == currency) return Account::withdraw(data.amount);
+	
+	// Przewalutowanie
+	double amount = data.amount * bank.exchange_selling_rate(currency);
+	if (data.curr != Currency::ENC) {
+		amount /= bank.exchange_buying_rate(data.curr);
+	}
+
+	Account::withdraw(amount);
+}
 
 // Gkb:
 BankBuilder& Gkb::bankApplication() const {

@@ -21,6 +21,7 @@ int main() {
     // możemy odszukać obywatela, o ile znamy jego identyfikator...
     
     auto& found = earth().findCitizen(captain.id());
+    cout <<"captain.id" << captain.id() <<endl;
     try {
         auto& spock = earth().findCitizen(10);
     } catch (...) {
@@ -65,25 +66,38 @@ int main() {
     // domyślnie kurs jest 1 do 1
     binariusCurrency.withdraw(1);
     binariusCurrency.withdraw({1, Currency::ENC});
-
+ cerr << "ID: " << picardsChecking.id() << endl;
+	cerr << "ID: " << picardsSaving.id() << endl;
+	cerr << "ID: " << binariusCurrency.id() << endl;
     // zmiana kursu waluty i wypłata
-    raisaBank.exchangeTable().exchangeRate(Currency::DIL).buyingRate(2.0).sellingRate(3.0);
+ //   raisaBank.exchangeTable().exchangeRate(Currency::DIL).buyingRate(2.0).sellingRate(3.0);
     cout << raisaBank.exchange_selling_rate(Currency::DIL) << endl;
     
+     cerr << "ID: " << picardsChecking.id() << endl;
+	cerr << "ID: " << picardsSaving.id() << endl;
+	cerr << "ID: " << binariusCurrency.id() << endl;
     binariusCurrency.withdraw({1, Currency::ENC});
     binariusCurrency.withdraw({1.0, Currency::DIL});
+	 cerr << "ID: " << picardsChecking.id() << endl;
+	cerr << "ID: " << picardsSaving.id() << endl;
+	cerr << "ID: " << binariusCurrency.id() << endl;
 	
     // stan konta rozliczeniowego Picarda
     ::std::cout << picardsChecking.balance() << ::std::endl;
     
 
     ::std::cout << picardsChecking.history() << ::std::endl;
-    
+   
     // stan konta oszczędnościowego Picarda
     ::std::cout << picardsSaving << ::std::endl;
 
     // stan konta walutowego Binariusa
     ::std::cout << binariusCurrency << ::std::endl;
+    
+    cerr << "ID: " << picardsChecking.id() << endl;
+	cerr << "ID: " << picardsSaving.id() << endl;
+	cerr << "ID: " << binariusCurrency.id() << endl;
+    
 /*
     // próba przelewu na nieistniejące konto...
     try {

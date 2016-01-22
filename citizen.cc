@@ -5,7 +5,7 @@ Citizen::id_citizen_t Citizen::new_id = 0;
 
 Citizen::Citizen (const std::string& name) : my_id (new_id++), my_name (name) {}; 
 
-const Citizen::id_citizen_t Citizen::id() const {
+Citizen::id_citizen_t Citizen::id() const {
 	return my_id;
 }
 

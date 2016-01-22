@@ -36,6 +36,7 @@ Bank::Bank (const std::string& name,
 		     ) : bank_name(name) {
 	for (int i = 0; i < 3; i++)
 		for (int j = 0; j < 4; j++) parameters[i][j] = par[i][j];
+	my_exchange_tabl = new ExchangeTable();
 	
 }
 
@@ -53,15 +54,15 @@ double Bank::monthlyCharge(account_type type) const {
 
 // Do informacji o aktualnym kursie:
 double Bank::exchange_buying_rate (Currency curr) const{
-	return my_exchange_tabl.exchange_buying_rate (curr);
+	return my_exchange_tabl->exchange_buying_rate (curr);
 }
 double Bank::exchange_selling_rate (Currency curr) const{
-	return my_exchange_tabl.exchange_selling_rate (curr);
+	return my_exchange_tabl->exchange_selling_rate (curr);
 }
 
 // metody do zmieniania kusru walut:
 ExchangeTable& Bank::exchangeTable() {
-	return my_exchange_tabl;
+	return *my_exchange_tabl;
 }
 
 ExchangeTable::ExchangeTable() {
@@ -347,7 +348,8 @@ void CurrencyAccount::withdraw(struct payment_format data) {
 // Gkb:
 BankBuilder& Gkb::bankApplication() const {
 	BankBuilder bank_builder;
-	return *std::make_shared<BankBuilder> (bank_builder);	
+	auto exchange_selling_rate = std::make_shared<BankBuilder>(bank_builder);	
+	return * exchange_selling_rate;
 }
 
 Gkb& Gkb::gkb() {

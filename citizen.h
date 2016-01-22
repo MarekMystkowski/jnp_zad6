@@ -6,7 +6,7 @@
 class Citizen {
 	public:
 		typedef int id_citizen_t;
-		const id_citizen_t id() const;
+		id_citizen_t id() const;
 		const std::string& name() const;
 	protected:
 		Citizen (const std::string& name);  

@@ -71,7 +71,7 @@ class Bank {
 		parameter_types parameters[NUMBER_OF_TYPES_OF_ACCOUNTS]
 		                                 [NUMBER_OF_PARAMERERS_OF_ACCOUNTS];
 		
-		ExchangeTable my_exchange_tabl;
+		ExchangeTable * my_exchange_tabl;
 };
 
 class BankBuilder {
@@ -199,6 +199,7 @@ class Gkb {
 		std::map<Account::id_acc_t, std::shared_ptr<CheckingAccount> > map_checking_account;
 		std::map<Account::id_acc_t, std::shared_ptr<SavingAccount> > map_saving_account;
 		std::map<Account::id_acc_t, std::shared_ptr<CurrencyAccount> > map_currency_account;
+		
 };
 #define gkb() Gkb::gkb()
 

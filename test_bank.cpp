@@ -70,7 +70,7 @@ int main() {
 	cerr << "ID: " << picardsSaving.id() << endl;
 	cerr << "ID: " << binariusCurrency.id() << endl;
     // zmiana kursu waluty i wypłata
- //   raisaBank.exchangeTable().exchangeRate(Currency::DIL).buyingRate(2.0).sellingRate(3.0);
+    raisaBank.exchangeTable().exchangeRate(Currency::DIL).buyingRate(2.0).sellingRate(3.0);
     cout << raisaBank.exchange_selling_rate(Currency::DIL) << endl;
     
      cerr << "ID: " << picardsChecking.id() << endl;

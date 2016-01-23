@@ -11,13 +11,8 @@
 #include <iostream>
 #include "interstellarclock.h"
 
-#define  NUMBER_OF_TYPES_OF_ACCOUNTS 3
-#define  NUMBER_OF_PARAMERERS_OF_ACCOUNTS 3
-#define  NUMBER_OF_CURRENCY 4
-enum class account_type : int {CHECKING = 0, SAVING = 1, CURRENCY = 2};
-enum class account_parameters : int {TRANSFER_CHARGE = 0, INTEREST_RATE = 1, MONTHLY_CHARGE = 2};
-typedef double parameter_types ;
 
+#define  NUMBER_OF_CURRENCY 4
 // Waluty:
 enum class Currency { ENC = 0, BIC = 1, DIL = 2, LIT = 3 };
 
@@ -43,11 +38,25 @@ class ExchangeTable {
 		Currency currently_set_exchange;
 		bool is_fixed_exchange;
 };
-
+class ParametersBank {
+	public :
+		ParametersBank();
+		static const int NUMBER_OF_TYPES_OF_ACCOUNTS = 3;
+		static const int NUMBER_OF_PARAMERERS_OF_ACCOUNTS = 3;
+		
+		enum class account_type : int {CHECKING = 0, SAVING = 1, CURRENCY = 2};
+		enum class account_parameters : int {TRANSFER_CHARGE = 0, INTEREST_RATE = 1, MONTHLY_CHARGE = 2};
+		typedef double parameter_types ;
+		parameter_types getParameters (account_type, account_parameters) const;
+		void setParameters (account_type, account_parameters, parameter_types);
+	private:
+		parameter_types parameters[NUMBER_OF_TYPES_OF_ACCOUNTS]
+		                      [NUMBER_OF_PARAMERERS_OF_ACCOUNTS];
+	
+};
 class Bank {
 	public :
-		Bank (const std::string& name, parameter_types const 
-				par[NUMBER_OF_TYPES_OF_ACCOUNTS][NUMBER_OF_PARAMERERS_OF_ACCOUNTS]);
+		Bank (const std::string& name, std::shared_ptr<ParametersBank> parameters);
 		
 		// Otwieranie kont:
 		CheckingAccount& openCheckingAccount(const Citizen& citizen) const;
@@ -55,9 +64,9 @@ class Bank {
 		CurrencyAccount& openCurrencyAccount(const Citizen& citizen, Currency curr) const;
 		
 		// Zwraca opłąty naliczane przez bank
-		double transferCharge(account_type) const;
-		double interestRate(account_type) const;
-		double monthlyCharge(account_type) const;
+		double transferCharge(ParametersBank::account_type) const;
+		double interestRate(ParametersBank::account_type) const;
+		double monthlyCharge(ParametersBank::account_type) const;
 
 		
 		// Zwracanie kursu waluty do ENC:
@@ -68,20 +77,16 @@ class Bank {
         		
 	private:
 		std::string bank_name;
-		parameter_types parameters[NUMBER_OF_TYPES_OF_ACCOUNTS]
-		                                 [NUMBER_OF_PARAMERERS_OF_ACCOUNTS];
-		
+		std::shared_ptr<ParametersBank> parameters;
 		ExchangeTable * my_exchange_tabl;
 };
 
 class BankBuilder {
 	private:
 		std::string bank_name;	
-		
-		parameter_types parameters[NUMBER_OF_TYPES_OF_ACCOUNTS]
-		                                 [NUMBER_OF_PARAMERERS_OF_ACCOUNTS];
-		
-		account_type currently_set_type;
+	
+		std::shared_ptr<ParametersBank> parameters;
+		ParametersBank::account_type currently_set_type;
 		bool is_fixed_type;
 	
 	public:

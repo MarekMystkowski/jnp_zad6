@@ -41,6 +41,7 @@ class ExchangeTable {
 class ParametersBank {
 	public :
 		ParametersBank();
+		ParametersBank& operator= (const ParametersBank& data);
 		static const int NUMBER_OF_TYPES_OF_ACCOUNTS = 3;
 		static const int NUMBER_OF_PARAMERERS_OF_ACCOUNTS = 3;
 		
@@ -91,7 +92,7 @@ class BankBuilder {
 	
 	public:
 		// do ustawiania wartości:
-		BankBuilder();
+		BankBuilder(std::shared_ptr<ParametersBank> parameters);
 		BankBuilder& name(const std::string);
 		BankBuilder& checkingAccount();
 		BankBuilder& savingAccount();
@@ -186,7 +187,8 @@ class CurrencyAccount : public Account {
 
 class Gkb {
 	public:
-		BankBuilder& bankApplication() const;
+		BankBuilder& bankApplication();
+		Bank& createBank(const std::string& name, std::shared_ptr<ParametersBank> parameters);
 		static Gkb& gkb();
 		bool is_account(Account::id_acc_t);									
 		Account& find_account(Account::id_acc_t);
@@ -205,6 +207,9 @@ class Gkb {
 		std::map<Account::id_acc_t, std::shared_ptr<SavingAccount> > map_saving_account;
 		std::map<Account::id_acc_t, std::shared_ptr<CurrencyAccount> > map_currency_account;
 		
+		// mapa dla banków:
+		std::map<int, std::shared_ptr<Bank> > map_bank;
+		std::map<int, std::shared_ptr<ParametersBank> > map_parameters_bank;
 };
 #define gkb() Gkb::gkb()
 

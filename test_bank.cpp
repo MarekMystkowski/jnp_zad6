@@ -55,7 +55,9 @@ int main() {
     picardsChecking.deposit(101.5);
     picardsChecking.withdraw({1.5, Currency::ENC});
     picardsChecking.transfer(100, picardsSaving.id());
-    
+    	cerr << "ID: " << picardsChecking.id() << endl;
+	cerr << "ID: " << picardsSaving.id() << endl;
+	cerr << "ID: " << binariusCurrency.id() << endl;
     // operacje na koncie oszczędnościowym
     picardsSaving.transfer(49.99, binariusCurrency.id(), "for binarius");
 

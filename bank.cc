@@ -1,5 +1,6 @@
 #include "bank.h"
 #include <memory>
+#include <iostream> // do usuniecia.
 static Account::id_acc_t new_id = 0;
 
 std::string name_currency (Currency curr) {
@@ -22,11 +23,12 @@ std::string name_currency (Currency curr) {
 }
 
 // Bank
-Bank::Bank (const std::string& name, std::shared_ptr<ParametersBank> param) : bank_name(name) {
+Bank::Bank (const std::string& name, std::shared_ptr<ParametersBank> param) : bank_name(name), parameters() {
 
 	my_exchange_tabl = new ExchangeTable();
-	ParametersBank _par = *param;
-	parameters = std::make_shared<ParametersBank> (_par);
+	std::cerr << "przed" << std::endl;
+	parameters = param;
+	std::cerr << "po"  << std:: endl;
 }
 
 double Bank::transferCharge(ParametersBank::account_type type) const {
@@ -103,9 +105,8 @@ CurrencyAccount& Bank::openCurrencyAccount(const Citizen& citizen, Currency curr
 }
 
 // BankBuilder:
-BankBuilder::BankBuilder() {
-	ParametersBank _pam = ParametersBank();
-	parameters = std::make_shared<ParametersBank> (_pam);
+BankBuilder::BankBuilder(std::shared_ptr<ParametersBank> param) {
+	parameters = param;
 	is_fixed_type = false;
 }
 
@@ -151,8 +152,7 @@ BankBuilder& BankBuilder::interestRate(double value) {
 }
 
 Bank& BankBuilder::createBank() const {
-	Bank bank = Bank(bank_name, parameters);
-	return *std::make_shared<Bank> (bank);
+	return gkb().createBank(bank_name, parameters);
 }
 
 
@@ -336,10 +336,21 @@ void CurrencyAccount::withdraw(struct payment_format data) {
 }
 
 // Gkb:
-BankBuilder& Gkb::bankApplication() const {
-	BankBuilder bank_builder;
-	auto exchange_selling_rate = std::make_shared<BankBuilder>(bank_builder);	
-	return * exchange_selling_rate;
+BankBuilder& Gkb::bankApplication(){
+	ParametersBank _param;
+	auto param = std::make_shared<ParametersBank> (_param);
+	map_parameters_bank[map_parameters_bank.size()] = param;
+	BankBuilder _bank_builder(map_parameters_bank[map_parameters_bank.size() - 1]);
+	auto bank_builder = std::make_shared<BankBuilder>(_bank_builder);
+	return * bank_builder;
+}
+
+Bank& Gkb::createBank(const std::string& name, std::shared_ptr<ParametersBank> parameters) {
+	Bank _bank(name, parameters);
+	auto bank = std::make_shared<Bank> (_bank);
+	map_bank[map_bank.size()] = bank;
+	return *map_bank[map_bank.size() - 1];
+	
 }
 
 Gkb& Gkb::gkb() {
@@ -390,6 +401,17 @@ ParametersBank::ParametersBank() {
 		for (int j = 0; j < NUMBER_OF_PARAMERERS_OF_ACCOUNTS; j++) 
 			parameters[i][j] = 0.0;
 }
+ParametersBank& ParametersBank::operator= (const ParametersBank& data) {
+	std::cerr << "nastąpiło przekopiowanie parametrów" << std::endl;
+	for (int i = 0; i < NUMBER_OF_TYPES_OF_ACCOUNTS; i++)
+		for (int j = 0; j < NUMBER_OF_PARAMERERS_OF_ACCOUNTS; j++) {
+			parameters[i][j] = data.parameters[i][j];
+			std::cerr << parameters[i][j] << " ";
+		}
+	std::cerr << std::endl;
+	return *this;
+}
+	
 
 ParametersBank::parameter_types ParametersBank::getParameters (
 		ParametersBank::account_type type, ParametersBank::account_parameters param) const {

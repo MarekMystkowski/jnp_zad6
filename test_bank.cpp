@@ -1,15 +1,11 @@
-#include "bank.h"
-#include "planet.h"
-#include "citizen.h"
+#include "gsb.h"
 #include <iostream>
 #include <assert.h>
 
 using namespace std;
 int main() {
 	
-	cout << "start testu banku" << endl;
-	auto jan = earth().registerCitizen("Jan");
-	auto ala = earth().registerCitizen("Ala");
+    cout << "start testu banku" << endl;
 	
     // rejestracja obywateli na poszczególnych planetach
     auto& captain = earth().registerCitizen("Jean-Luc Picard");
@@ -48,42 +44,49 @@ int main() {
     auto& picardsSaving = enterpriseBank.openSavingAccount(captain);
     auto& binariusCurrency = raisaBank.openCurrencyAccount(binarius, Currency::DIL);
 	
-	cerr << "ID: " << picardsChecking.id() << endl;
-	cerr << "ID: " << picardsSaving.id() << endl;
-	cerr << "ID: " << binariusCurrency.id() << endl;
+
     // operacje na koncie rozliczeniowym
     picardsChecking.deposit(101.5);
     picardsChecking.withdraw({1.5, Currency::ENC});
     picardsChecking.transfer(100, picardsSaving.id());
-    	cerr << "ID: " << picardsChecking.id() << endl;
-	cerr << "ID: " << picardsSaving.id() << endl;
-	cerr << "ID: " << binariusCurrency.id() << endl;
+    
+    cerr << "Wypisanie konta po wplacie 101.5, wyplacie 1.5, i przeslaniu na konto oszczednosciowe" << endl;    
+    cerr << picardsChecking << endl;
+
     // operacje na koncie oszczędnościowym
     picardsSaving.transfer(49.99, binariusCurrency.id(), "for binarius");
+    cerr << "Przesłanie z oszczednoscioweko 49.99 na binarius walutowego, oplata za tranzakcje to 1 =" <<enterpriseBank.transferCharge(ParametersBank::AccountType::SAVING) <<endl;
+    cerr << picardsSaving << endl;
+
 
     interstellarClock().nextMonth().nextDay();
 	cout << "date: " << interstellarClock().date() << endl;
-    
+    cerr << "Po minięciu 31 dni" << endl;
+    cerr << picardsChecking << endl;
+
+    cerr << "Koszty dla tego konta to -2 co miesiąc i +5%" << endl;
+    cerr << picardsSaving << endl;
+    cerr << binariusCurrency << endl; 
     // operacje na koncie walutowym
     // domyślnie kurs jest 1 do 1
     binariusCurrency.withdraw(1);
     binariusCurrency.withdraw({1, Currency::ENC});
- cerr << "ID: " << picardsChecking.id() << endl;
-	cerr << "ID: " << picardsSaving.id() << endl;
-	cerr << "ID: " << binariusCurrency.id() << endl;
+    cerr << "Po 2 wpłatach: 1DIL , 1ENC, kurs: 1:1" << endl;
+    cerr << binariusCurrency << endl;
+
     // zmiana kursu waluty i wypłata
     raisaBank.exchangeTable().exchangeRate(Currency::DIL).buyingRate(2.0).sellingRate(3.0);
-    cout << raisaBank.exchange_selling_rate(Currency::DIL) << endl;
-    
-     cerr << "ID: " << picardsChecking.id() << endl;
-	cerr << "ID: " << picardsSaving.id() << endl;
-	cerr << "ID: " << binariusCurrency.id() << endl;
+    cerr << "sel_Dil 3 = "<< raisaBank.exchange_selling_rate(Currency::DIL) << endl;
+    cerr << "sel_Dil 2 = "<< raisaBank.exchange_buying_rate(Currency::DIL) << endl;
+
+ 
     binariusCurrency.withdraw({1, Currency::ENC});
     binariusCurrency.withdraw({1.0, Currency::DIL});
-	 cerr << "ID: " << picardsChecking.id() << endl;
-	cerr << "ID: " << picardsSaving.id() << endl;
-	cerr << "ID: " << binariusCurrency.id() << endl;
-	
+
+    cerr << "Po 2 wpłatach: 1EN , 1DIL" << endl;
+    cerr << binariusCurrency << endl;
+
+
     // stan konta rozliczeniowego Picarda
     ::std::cout << picardsChecking.balance() << ::std::endl;
     
@@ -96,9 +99,6 @@ int main() {
     // stan konta walutowego Binariusa
     ::std::cout << binariusCurrency << ::std::endl;
     
-    cerr << "ID: " << picardsChecking.id() << endl;
-	cerr << "ID: " << picardsSaving.id() << endl;
-	cerr << "ID: " << binariusCurrency.id() << endl;
     
 /*
     // próba przelewu na nieistniejące konto...

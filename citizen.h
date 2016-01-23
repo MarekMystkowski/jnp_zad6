@@ -8,6 +8,8 @@ class Citizen {
 		typedef int id_citizen_t;
 		id_citizen_t id() const;
 		const std::string& name() const;
+		bool operator==(const Citizen&) const;
+		bool operator!=(const Citizen&) const;
 	protected:
 		Citizen (const std::string& name);  
 	private:

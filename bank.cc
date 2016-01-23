@@ -1,6 +1,6 @@
 #include "bank.h"
 #include <memory>
-#include <iostream> // do usuniecia.
+#include <iostream> 
 static Account::id_acc_t new_id = 0;
 
 std::string name_currency (Currency curr) {
@@ -78,12 +78,14 @@ ExchangeTable& ExchangeTable::exchangeRate(Currency curr) {
 
 ExchangeTable& ExchangeTable::buyingRate(double v) {
 	if(not is_fixed_exchange) return *this;
+	if (v < 0) throw NegativeValue();
 	tab_buying_rates[(int)currently_set_exchange] = v;
 	return *this;
 }
 
 ExchangeTable& ExchangeTable::sellingRate(double v) {
 	if(not is_fixed_exchange) return *this;
+	if (v < 0) throw NegativeValue();
 	tab_selling_rates[(int)currently_set_exchange] = v;
 	return *this;
 }
@@ -98,6 +100,7 @@ SavingAccount& Bank::openSavingAccount(const Citizen& citizen) const {
 }
 
 CurrencyAccount& Bank::openCurrencyAccount(const Citizen& citizen, Currency curr) const {
+	if (curr == Currency::ENC ) throw WrongTypeOfCurrency();
 	return gkb().create_currency_account(*this, citizen, curr);	
 }
 
@@ -132,18 +135,21 @@ BankBuilder& BankBuilder::currencyAccount() {
 
 BankBuilder& BankBuilder::monthlyCharge(double value) {
 	if (not is_fixed_type) return *this;
+	if (value < 0) throw NegativeValue();
 	parameters->setParameters(currently_set_type, ParametersBank::AccountParameters::MONTHLY_CHARGE, value);
 	return *this;
 }
 
 BankBuilder& BankBuilder::transferCharge(double value) {
 	if (not is_fixed_type) return *this;
+	if (value < 0) throw NegativeValue();
 	parameters->setParameters(currently_set_type, ParametersBank::AccountParameters::TRANSFER_CHARGE, value);
 	return *this;
 }
 
 BankBuilder& BankBuilder::interestRate(double value) {
 	if (not is_fixed_type) return *this;
+	if (value < 0) throw NegativeValue();
 	parameters->setParameters(currently_set_type, ParametersBank::AccountParameters::INTEREST_RATE, value);
 	return *this;
 }
@@ -180,16 +186,23 @@ void Account::notify() {
 	
 	my_balance += interest - monthly;
 	
+	char s_interest[1000];
+	std::sprintf(s_interest,"%.2f", interest);
+	char s_monthlyCharge[1000];
+	std::sprintf(s_monthlyCharge,"%.2f", monthlyCharge());
+	
 	if(interest != 0) my_history += std::to_string(interstellarClock().date()) + " " +
-		std::to_string(interest) + name_currency(currency) + " INTEREST\n";
+		s_interest + name_currency(currency) + " INTEREST\n";
 		
 	if(monthly != 0) my_history += std::to_string(interstellarClock().date()) +
-		" -" + std::to_string(monthlyCharge()) + name_currency(currency) + " CHARGE\n";
-	if (my_balance < 0) throw NegativeBalance();
+		" -" + s_monthlyCharge + name_currency(currency) + " CHARGE\n";
+	//if (my_balance < 0) throw NegativeBalance();  // jak po naliczeniu misięcznej opłaty spadło <0
 }
 
 std::string Account::balance() const {
-	std::string s =  std::to_string(my_balance) + name_currency(currency);
+	char s_my_balance[1000];
+	std::sprintf(s_my_balance,"%.2f", my_balance);
+	std::string s =  s_my_balance + name_currency(currency);
 	return s;
 }
 
@@ -207,7 +220,9 @@ std::ostream& operator<<(std::ostream& os, const Account& acc) {
 void Account::deposit(double amount) {
 	if (amount < 0) throw NegativeAmount();
 	my_balance += amount;
-	my_history += std::to_string(interstellarClock().date()) + " " + std::to_string(amount) + name_currency(currency) + " ";
+	char s_amount[1000];
+	std::sprintf(s_amount,"%.2f", amount);
+	my_history += std::to_string(interstellarClock().date()) + " " + s_amount + name_currency(currency) + " ";
 	my_history += "DEPOSIT\n";
 }
 
@@ -215,7 +230,9 @@ void Account::withdraw(double amount) {
 	if (amount > my_balance ) throw NotEnoughMoney();
 	if (amount < 0) throw NegativeAmount();
 	my_balance -= amount;
-	my_history += std::to_string(interstellarClock().date()) + " -" + std::to_string(amount) + name_currency(currency) + " ";
+	char s_amount[1000];
+	std::sprintf(s_amount,"%.2f", amount);
+	my_history += std::to_string(interstellarClock().date()) + " -" + s_amount + name_currency(currency) + " ";
 	my_history += "WITHDRAWAL\n";
 }
 
@@ -249,11 +266,20 @@ void Account::transfer(double amount, Account::id_acc_t recipient, const std::st
 	reci.my_balance += payment;
 	
 	// Zarejestrowanie w historii.
-	my_history += std::to_string(interstellarClock().date()) + " -" + std::to_string(amount) + name_currency(currency) + " ";
-	my_history += "TRANSFER (" + title + ") FROM: " + std::to_string(id()) + " TO: " + std::to_string(reci.id()) + "\n";
+	std::string date = std::to_string(interstellarClock().date());
+	char s_amount[1000];
+	std::sprintf(s_amount,"%.2f", amount);
+	char s_transferCharge[1000];
+	std::sprintf(s_transferCharge,"%.2f", transferCharge());
 	
-	reci.my_history += std::to_string(interstellarClock().date()) + " " + std::to_string(amount) + name_currency(currency) + " ";
+	my_history += date + " -" + s_amount + name_currency(currency) + " ";
+	my_history += "TRANSFER (" + title + ") FROM: " + std::to_string(id()) + " TO: " + std::to_string(reci.id()) + "\n";
+	if (transferCharge() > 0) my_history += date + " -" + s_transferCharge +"ENC CHARGE\n";
+	
+	reci.my_history += date + " " + s_amount + name_currency(currency) + " ";
 	reci.my_history += "TRANSFER (" + title + ") FROM: " + std::to_string(id()) + " TO: " + std::to_string(reci.id()) + "\n";
+	
+	
 	
 } 
 
@@ -321,7 +347,10 @@ void CurrencyAccount::deposit(struct payment_format data) {
 	}
 	amount /= bank.exchange_buying_rate(currency);
 	
-	my_history += std::to_string(interstellarClock().date()) + " " + std::to_string(data.amount) + name_currency(data.curr) + " ";
+	char s_d_amount[1000];
+	std::sprintf(s_d_amount,"%.2f", data.amount);
+	
+	my_history += std::to_string(interstellarClock().date()) + " " + s_d_amount + name_currency(data.curr) + " ";
 	my_history += "DEPOSIT\n";
 	my_balance += amount;
 	
@@ -332,14 +361,15 @@ void CurrencyAccount::withdraw(struct payment_format data) {
 	if (data.amount < 0) throw NegativeAmount();
 	
 	// Przewalutowanie
-	double amount = data.amount * bank.exchange_selling_rate(currency);
-	if (data.curr != Currency::ENC) {
-		amount /= bank.exchange_buying_rate(data.curr);
-	}
+	double amount = data.amount * bank.exchange_selling_rate(data.curr);
+	amount /= bank.exchange_buying_rate(currency);
 	if (amount > my_balance ) throw NotEnoughMoney();
 	my_balance -= amount;
 	
-	my_history += std::to_string(interstellarClock().date()) + " -" + std::to_string(data.amount) + name_currency(data.curr) + " ";
+	char s_d_amount[1000];
+	std::sprintf(s_d_amount,"%.2f", data.amount);
+	
+	my_history += std::to_string(interstellarClock().date()) + " -" + s_d_amount + name_currency(data.curr) + " ";
 	my_history += "WITHDRAWAL\n";
 }
 

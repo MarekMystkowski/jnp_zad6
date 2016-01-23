@@ -15,7 +15,8 @@ Date InterstellarClock::date() const {
 }
 
 InterstellarClock& InterstellarClock::nextHour() {
-	 if (_hours % (HOURS_IN_DAY * DAYS_IN_MONTH) == 0)
+	// Naliczane są opłaty 30 *k dnia o godzinie 23:59 (pod koniec dnia) , gdzie k >= 1 , naturalne.
+	 if (_hours % (HOURS_IN_DAY * DAYS_IN_MONTH) == 0 && _hours != 0)
 		notify();
     _hours++;
     return *this;

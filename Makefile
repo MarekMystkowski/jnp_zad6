@@ -29,5 +29,15 @@ test_bank: test_bank.o citizen.o planet.o bank.o interstellarclock.o
 interstellarclock.o: interstellarclock.cpp interstellarclock.h
 	clang++-3.7 -g -Wall -std=c++11 interstellarclock.cpp -c -o interstellarclock.o
 
+gsb_test01.o: gsb_test01.cpp 
+	clang++-3.7 -g -Wall -std=c++11 gsb_test01.cpp -c -o gsb_test01.o
+gsb_test01: gsb_test01.o citizen.o planet.o bank.o interstellarclock.o
+	clang++-3.7 gsb_test01.o citizen.o planet.o bank.o interstellarclock.o -o gsb_test01
+
+gsb_test02.o: gsb_test02.cpp 
+	clang++-3.7 -g -Wall -std=c++11 gsb_test02.cpp -c -o gsb_test02.o
+gsb_test02: gsb_test02.o citizen.o planet.o bank.o interstellarclock.o
+	clang++-3.7 gsb_test02.o citizen.o planet.o bank.o interstellarclock.o -o gsb_test02
+
 rm:
 	rm citizen.o test_ludzi.o test_ludzi planet.o test_planet.o test_planet bank.o test_bank.o test_bank interstellarclock.o

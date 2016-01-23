@@ -41,6 +41,10 @@ class NegativeAmount : public std::exception {
   virtual const char* what() const throw() { return "Negative amount!"; }
 };
 
+class NegativeValue : public std::exception {
+ public:
+  virtual const char* what() const throw() { return "Negative value!"; }
+};
 
 
 class CheckingAccount;

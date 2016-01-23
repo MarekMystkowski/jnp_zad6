@@ -13,6 +13,14 @@ const std::string& Citizen::name() const {
 	return my_name;
 }
 
+bool Citizen::operator==(const Citizen& cit) const {
+	return (id() == cit.id());
+}
+
+bool Citizen::operator!=(const Citizen& cit) const {
+	return (id() != cit.id());
+}
+
 // Human
 Human::Human (const std::string& name) : Citizen (name) {};
 

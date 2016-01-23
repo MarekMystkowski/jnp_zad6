@@ -15,10 +15,9 @@ Date InterstellarClock::date() const {
 }
 
 InterstellarClock& InterstellarClock::nextHour() {
-    _hours++;
-    if (_hours % (HOURS_IN_DAY * DAYS_IN_MONTH) == 0) {
+	 if (_hours % (HOURS_IN_DAY * DAYS_IN_MONTH) == 0)
 		notify();
-	}
+    _hours++;
     return *this;
 }
 

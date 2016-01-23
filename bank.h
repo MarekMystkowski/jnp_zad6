@@ -11,10 +11,36 @@
 #include <iostream>
 #include "interstellarclock.h"
 
-
-#define  NUMBER_OF_CURRENCY 4
 // Waluty:
+#define  NUMBER_OF_CURRENCY 4
 enum class Currency { ENC = 0, BIC = 1, DIL = 2, LIT = 3 };
+
+// Wyjątki:
+class NegativeBalance : public std::exception {
+ public:
+  virtual const char* what() const throw() { return "Negative balance!"; }
+};
+
+class NotEnoughMoney : public std::exception {
+ public:
+  virtual const char* what() const throw() { return "Not enough money!"; }
+};
+
+class WrongTypeOfCurrency : public std::exception {
+ public:
+  virtual const char* what() const throw() { return "Wrong type of currency!"; }
+};
+
+class NoAccountFound : public std::exception {
+ public:
+  virtual const char* what() const throw() { return "No account found!"; }
+};
+
+class NegativeAmount : public std::exception {
+ public:
+  virtual const char* what() const throw() { return "Negative amount!"; }
+};
+
 
 
 class CheckingAccount;
@@ -38,23 +64,24 @@ class ExchangeTable {
 		Currency currently_set_exchange;
 		bool is_fixed_exchange;
 };
+
 class ParametersBank {
 	public :
 		ParametersBank();
-		ParametersBank& operator= (const ParametersBank& data);
-		static const int NUMBER_OF_TYPES_OF_ACCOUNTS = 3;
-		static const int NUMBER_OF_PARAMERERS_OF_ACCOUNTS = 3;
+		//ParametersBank& operator= (const ParametersBank& data);
+		static const int nummber_of_types = 3;
+		static const int number_of_parameters = 3;
 		
-		enum class account_type : int {CHECKING = 0, SAVING = 1, CURRENCY = 2};
-		enum class account_parameters : int {TRANSFER_CHARGE = 0, INTEREST_RATE = 1, MONTHLY_CHARGE = 2};
+		enum class AccountType : int {CHECKING = 0, SAVING = 1, CURRENCY = 2};
+		enum class AccountParameters : int {TRANSFER_CHARGE = 0, INTEREST_RATE = 1, MONTHLY_CHARGE = 2};
 		typedef double parameter_types ;
-		parameter_types getParameters (account_type, account_parameters) const;
-		void setParameters (account_type, account_parameters, parameter_types);
+		parameter_types getParameters (AccountType, AccountParameters) const;
+		void setParameters (AccountType, AccountParameters, parameter_types);
 	private:
-		parameter_types parameters[NUMBER_OF_TYPES_OF_ACCOUNTS]
-		                      [NUMBER_OF_PARAMERERS_OF_ACCOUNTS];
+		parameter_types parameters[nummber_of_types][number_of_parameters];
 	
 };
+
 class Bank {
 	public :
 		Bank (const std::string& name, std::shared_ptr<ParametersBank> parameters);
@@ -65,9 +92,9 @@ class Bank {
 		CurrencyAccount& openCurrencyAccount(const Citizen& citizen, Currency curr) const;
 		
 		// Zwraca opłąty naliczane przez bank
-		double transferCharge(ParametersBank::account_type) const;
-		double interestRate(ParametersBank::account_type) const;
-		double monthlyCharge(ParametersBank::account_type) const;
+		double transferCharge(ParametersBank::AccountType) const;
+		double interestRate(ParametersBank::AccountType) const;
+		double monthlyCharge(ParametersBank::AccountType) const;
 
 		
 		// Zwracanie kursu waluty do ENC:
@@ -87,7 +114,7 @@ class BankBuilder {
 		std::string bank_name;	
 	
 		std::shared_ptr<ParametersBank> parameters;
-		ParametersBank::account_type currently_set_type;
+		ParametersBank::AccountType currently_set_type;
 		bool is_fixed_type;
 	
 	public:

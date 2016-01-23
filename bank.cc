@@ -24,23 +24,20 @@ std::string name_currency (Currency curr) {
 
 // Bank
 Bank::Bank (const std::string& name, std::shared_ptr<ParametersBank> param) : bank_name(name), parameters() {
-
 	my_exchange_tabl = new ExchangeTable();
-	std::cerr << "przed" << std::endl;
 	parameters = param;
-	std::cerr << "po"  << std:: endl;
 }
 
-double Bank::transferCharge(ParametersBank::account_type type) const {
-	return parameters->getParameters(type, ParametersBank::account_parameters::TRANSFER_CHARGE);
+double Bank::transferCharge(ParametersBank::AccountType type) const {
+	return parameters->getParameters(type, ParametersBank::AccountParameters::TRANSFER_CHARGE);
 }
 
-double Bank::interestRate(ParametersBank::account_type type) const {
-	return parameters->getParameters(type, ParametersBank::account_parameters::INTEREST_RATE);
+double Bank::interestRate(ParametersBank::AccountType type) const {
+	return parameters->getParameters(type, ParametersBank::AccountParameters::INTEREST_RATE);
 }
 
-double Bank::monthlyCharge(ParametersBank::account_type type) const {
-	return parameters->getParameters(type, ParametersBank::account_parameters::MONTHLY_CHARGE);
+double Bank::monthlyCharge(ParametersBank::AccountType type) const {
+	return parameters->getParameters(type, ParametersBank::AccountParameters::MONTHLY_CHARGE);
 }
 
 // Do informacji o aktualnym kursie:
@@ -116,38 +113,38 @@ BankBuilder& BankBuilder::name(const std::string _name) {
 }
 
 BankBuilder& BankBuilder::checkingAccount() {
-    currently_set_type = ParametersBank::account_type::CHECKING;
+    currently_set_type = ParametersBank::AccountType::CHECKING;
     is_fixed_type = true;
     return *this;
 }
 
 BankBuilder& BankBuilder::savingAccount() {
-    currently_set_type = ParametersBank::account_type::SAVING;
+    currently_set_type = ParametersBank::AccountType::SAVING;
     is_fixed_type = true;
     return *this;
 }
 
 BankBuilder& BankBuilder::currencyAccount() {
-    currently_set_type = ParametersBank::account_type::CURRENCY;
+    currently_set_type = ParametersBank::AccountType::CURRENCY;
     is_fixed_type = true;
     return *this;
 }
 
 BankBuilder& BankBuilder::monthlyCharge(double value) {
 	if (not is_fixed_type) return *this;
-	parameters->setParameters(currently_set_type, ParametersBank::account_parameters::MONTHLY_CHARGE, value);
+	parameters->setParameters(currently_set_type, ParametersBank::AccountParameters::MONTHLY_CHARGE, value);
 	return *this;
 }
 
 BankBuilder& BankBuilder::transferCharge(double value) {
 	if (not is_fixed_type) return *this;
-	parameters->setParameters(currently_set_type, ParametersBank::account_parameters::TRANSFER_CHARGE, value);
+	parameters->setParameters(currently_set_type, ParametersBank::AccountParameters::TRANSFER_CHARGE, value);
 	return *this;
 }
 
 BankBuilder& BankBuilder::interestRate(double value) {
 	if (not is_fixed_type) return *this;
-	parameters->setParameters(currently_set_type, ParametersBank::account_parameters::INTEREST_RATE, value);
+	parameters->setParameters(currently_set_type, ParametersBank::AccountParameters::INTEREST_RATE, value);
 	return *this;
 }
 
@@ -178,11 +175,17 @@ double Account::monthlyCharge() const {
 }
 
 void Account::notify() {
-	double x = my_balance * interestRate();
+	double interest = my_balance * interestRate() / 100;
+	double monthly = monthlyCharge() / bank.exchange_buying_rate(currency);
 	
-	my_balance += x -monthlyCharge();
-	my_history += std::to_string(interstellarClock().date()) + " " + std::to_string(x) + name_currency(currency) + " INTEREST\n";
-	my_history += std::to_string(interstellarClock().date()) + " -" + std::to_string(monthlyCharge()) + name_currency(currency) + " CHARGE\n";		
+	my_balance += interest - monthly;
+	
+	if(interest != 0) my_history += std::to_string(interstellarClock().date()) + " " +
+		std::to_string(interest) + name_currency(currency) + " INTEREST\n";
+		
+	if(monthly != 0) my_history += std::to_string(interstellarClock().date()) +
+		" -" + std::to_string(monthlyCharge()) + name_currency(currency) + " CHARGE\n";
+	if (my_balance < 0) throw NegativeBalance();
 }
 
 std::string Account::balance() const {
@@ -202,31 +205,34 @@ std::ostream& operator<<(std::ostream& os, const Account& acc) {
 }
 
 void Account::deposit(double amount) {
+	if (amount < 0) throw NegativeAmount();
 	my_balance += amount;
 	my_history += std::to_string(interstellarClock().date()) + " " + std::to_string(amount) + name_currency(currency) + " ";
 	my_history += "DEPOSIT\n";
 }
 
 void Account::withdraw(double amount) {
-	if (amount > my_balance ) throw "za malo kasy";
+	if (amount > my_balance ) throw NotEnoughMoney();
+	if (amount < 0) throw NegativeAmount();
 	my_balance -= amount;
 	my_history += std::to_string(interstellarClock().date()) + " -" + std::to_string(amount) + name_currency(currency) + " ";
 	my_history += "WITHDRAWAL\n";
 }
 
 void Account::deposit(struct payment_format data) {
-	if (data.curr != currency) throw "Zły typ waluty";
+	if (data.curr != currency) throw WrongTypeOfCurrency();
 	deposit(data.amount);
 }
 
 void Account::withdraw(struct payment_format data) {
-	if (data.curr != currency) throw "Zły typ waluty";
+	if (data.curr != currency) throw WrongTypeOfCurrency();
 	withdraw(data.amount);
 }
 
 void Account::transfer(double amount, Account::id_acc_t recipient, const std::string& title) {
-	if (not gkb().is_account(recipient)) throw "Nie ma konta";	
-	if (amount > my_balance - transferCharge() ) throw "za malo kasy";															// Mądrzejszy wyjątek
+	if (not gkb().is_account(recipient)) throw NoAccountFound();	
+	if (amount < 0) throw NegativeAmount();
+	if (amount > my_balance - transferCharge() ) throw NotEnoughMoney();	
 	my_balance -= amount + transferCharge();
 	auto& reci = gkb().find_account(recipient);
 	double payment = amount; // wpłąta u adresata
@@ -261,15 +267,15 @@ CheckingAccount::CheckingAccount(const Bank& my_bank, const Citizen& citizen) :
                  Account (my_bank, citizen, Currency::ENC){}
 
 double CheckingAccount::transferCharge() const {
-	return bank.transferCharge(ParametersBank::account_type::CHECKING);
+	return bank.transferCharge(ParametersBank::AccountType::CHECKING);
 }
 
 double CheckingAccount::interestRate() const {
-	return bank.interestRate(ParametersBank::account_type::CHECKING);
+	return bank.interestRate(ParametersBank::AccountType::CHECKING);
 }
 
 double CheckingAccount::monthlyCharge() const {
-	return bank.monthlyCharge(ParametersBank::account_type::CHECKING);
+	return bank.monthlyCharge(ParametersBank::AccountType::CHECKING);
 }
 
 // SavingAccount:
@@ -277,15 +283,15 @@ SavingAccount::SavingAccount(const Bank& my_bank, const Citizen& citizen) :
                  Account (my_bank, citizen, Currency::ENC){}
 
 double SavingAccount::transferCharge() const {
-	return bank.transferCharge(ParametersBank::account_type::SAVING);
+	return bank.transferCharge(ParametersBank::AccountType::SAVING);
 }
 
 double SavingAccount::interestRate() const {
-	return bank.interestRate(ParametersBank::account_type::SAVING);
+	return bank.interestRate(ParametersBank::AccountType::SAVING);
 }
 
 double SavingAccount::monthlyCharge() const {
-	return bank.monthlyCharge(ParametersBank::account_type::SAVING);
+	return bank.monthlyCharge(ParametersBank::AccountType::SAVING);
 }
 
 // Account:
@@ -293,19 +299,20 @@ CurrencyAccount::CurrencyAccount(const Bank& my_bank, const Citizen& citizen,Cur
                  Account (my_bank, citizen, curr){}
 
 double CurrencyAccount::transferCharge() const {
-	return bank.transferCharge(ParametersBank::account_type::CURRENCY);
+	return bank.transferCharge(ParametersBank::AccountType::CURRENCY);
 }
 
 double CurrencyAccount::interestRate() const {
-	return bank.interestRate(ParametersBank::account_type::CURRENCY);
+	return bank.interestRate(ParametersBank::AccountType::CURRENCY);
 }
 
 double CurrencyAccount::monthlyCharge() const {
-	return bank.monthlyCharge(ParametersBank::account_type::CURRENCY);
+	return bank.monthlyCharge(ParametersBank::AccountType::CURRENCY);
 }
 
 void CurrencyAccount::deposit(struct payment_format data) {
 	if (data.curr == currency) return Account::deposit(data.amount);
+	if (data.amount < 0) throw NegativeAmount();
 	
 	// Przewalutowanie
 	double amount = data.amount;
@@ -322,13 +329,14 @@ void CurrencyAccount::deposit(struct payment_format data) {
 
 void CurrencyAccount::withdraw(struct payment_format data) {
 	if (data.curr == currency) return Account::withdraw(data.amount);
+	if (data.amount < 0) throw NegativeAmount();
 	
 	// Przewalutowanie
 	double amount = data.amount * bank.exchange_selling_rate(currency);
 	if (data.curr != Currency::ENC) {
 		amount /= bank.exchange_buying_rate(data.curr);
 	}
-	if (amount > my_balance ) throw "za malo kasy";
+	if (amount > my_balance ) throw NotEnoughMoney();
 	my_balance -= amount;
 	
 	my_history += std::to_string(interstellarClock().date()) + " -" + std::to_string(data.amount) + name_currency(data.curr) + " ";
@@ -368,7 +376,7 @@ Account& Gkb::find_account(Account::id_acc_t id) {
 	if (map_checking_account.count(id)) return *map_checking_account.at(id);
 	if (map_saving_account.count(id))   return *map_saving_account.at(id);
 	if (map_currency_account.count(id)) return *map_currency_account.at(id);
-	throw "nie ma konta o tym id";					 // bardziej sensowny wyjątek stworzyć.
+	throw NoAccountFound();
 }
 
 CheckingAccount& Gkb::create_checking_account(const Bank& bank, const Citizen& citizen) {
@@ -397,28 +405,27 @@ CurrencyAccount& Gkb::create_currency_account(const Bank& bank, const Citizen& c
 
 
 ParametersBank::ParametersBank() {
-	for (int i = 0; i < NUMBER_OF_TYPES_OF_ACCOUNTS; i++)
-		for (int j = 0; j < NUMBER_OF_PARAMERERS_OF_ACCOUNTS; j++) 
+	for (int i = 0; i < nummber_of_types; i++)
+		for (int j = 0; j < number_of_parameters; j++) 
 			parameters[i][j] = 0.0;
 }
+/*
 ParametersBank& ParametersBank::operator= (const ParametersBank& data) {
-	std::cerr << "nastąpiło przekopiowanie parametrów" << std::endl;
-	for (int i = 0; i < NUMBER_OF_TYPES_OF_ACCOUNTS; i++)
-		for (int j = 0; j < NUMBER_OF_PARAMERERS_OF_ACCOUNTS; j++) {
+	for (int i = 0; i < nummber_of_types; i++)
+		for (int j = 0; j < number_of_parameters; j++) {
 			parameters[i][j] = data.parameters[i][j];
 			std::cerr << parameters[i][j] << " ";
 		}
 	std::cerr << std::endl;
 	return *this;
-}
-	
+}*/
 
 ParametersBank::parameter_types ParametersBank::getParameters (
-		ParametersBank::account_type type, ParametersBank::account_parameters param) const {
+		ParametersBank::AccountType type, ParametersBank::AccountParameters param) const {
 	return parameters[(int)type][(int)param];
 }
 
-void ParametersBank::setParameters(ParametersBank::account_type type,
-		ParametersBank::account_parameters param, ParametersBank::parameter_types value) {
+void ParametersBank::setParameters(ParametersBank::AccountType type,
+		ParametersBank::AccountParameters param, ParametersBank::parameter_types value) {
 	parameters[(int)type][(int)param] = value;
 }	

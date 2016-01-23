@@ -196,7 +196,7 @@ void Account::notify() {
 		
 	if(monthly != 0) my_history += std::to_string(interstellarClock().date()) +
 		" -" + s_monthlyCharge + name_currency(currency) + " CHARGE\n";
-	//if (my_balance < 0) throw NegativeBalance();  // jak po naliczeniu misięcznej opłaty spadło <0
+	//if (my_balance < 0) throw NegativeBalance();  // jak po naliczeniu misięcznej opłaty spadło <0 
 }
 
 std::string Account::balance() const {
@@ -279,10 +279,7 @@ void Account::transfer(double amount, Account::id_acc_t recipient, const std::st
 	reci.my_history += date + " " + s_amount + name_currency(currency) + " ";
 	reci.my_history += "TRANSFER (" + title + ") FROM: " + std::to_string(id()) + " TO: " + std::to_string(reci.id()) + "\n";
 	
-	
-	
 } 
-
 
 void Account::transfer(double amount, Account::id_acc_t recipient) {
 	transfer(amount, recipient, "");
@@ -413,7 +410,7 @@ CheckingAccount& Gkb::create_checking_account(const Bank& bank, const Citizen& c
 	CheckingAccount _checking_account(bank, citizen);
 	auto shar = std::make_shared<CheckingAccount> (_checking_account);
 	map_checking_account[_checking_account.id()] = shar;
-	interstellarClock().registration_account(&find_account(_checking_account.id()));
+	interstellarClock().registrationObserver(find_account(_checking_account.id()));
 	return *shar;
 }
 
@@ -421,7 +418,7 @@ SavingAccount& Gkb::create_saving_account(const Bank& bank, const Citizen& citiz
 	SavingAccount _saving_account(bank, citizen);
 	auto shar = std::make_shared<SavingAccount> (_saving_account);
 	map_saving_account[_saving_account.id()] = shar;
-	interstellarClock().registration_account(&find_account(_saving_account.id()));
+	interstellarClock().registrationObserver(find_account(_saving_account.id()));
 	return *shar;
 }
 
@@ -429,26 +426,15 @@ CurrencyAccount& Gkb::create_currency_account(const Bank& bank, const Citizen& c
 	CurrencyAccount _currency_account(bank, citizen, curr);
 	auto shar = std::make_shared<CurrencyAccount> (_currency_account);
 	map_currency_account[_currency_account.id()] = shar;
-	interstellarClock().registration_account(&find_account(_currency_account.id()));
+	interstellarClock().registrationObserver(find_account(_currency_account.id()));
 	return *shar;
 }
-
 
 ParametersBank::ParametersBank() {
 	for (int i = 0; i < nummber_of_types; i++)
 		for (int j = 0; j < number_of_parameters; j++) 
 			parameters[i][j] = 0.0;
 }
-/*
-ParametersBank& ParametersBank::operator= (const ParametersBank& data) {
-	for (int i = 0; i < nummber_of_types; i++)
-		for (int j = 0; j < number_of_parameters; j++) {
-			parameters[i][j] = data.parameters[i][j];
-			std::cerr << parameters[i][j] << " ";
-		}
-	std::cerr << std::endl;
-	return *this;
-}*/
 
 ParametersBank::parameter_types ParametersBank::getParameters (
 		ParametersBank::AccountType type, ParametersBank::AccountParameters param) const {

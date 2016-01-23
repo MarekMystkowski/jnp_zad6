@@ -1,15 +1,14 @@
 #ifndef __gsb__bank__
 #define __gsb__bank__
-
 #include <exception>
 #include <string>
 #include <map>
 #include <memory>
-#include <initializer_list>
 #include <tuple>
 #include "citizen.h"
 #include <iostream>
 #include "interstellarclock.h"
+#include "observe.h"
 
 // Waluty:
 #define  NUMBER_OF_CURRENCY 4
@@ -141,7 +140,7 @@ struct payment_format {
 	Currency curr;
 };
 // Klasy związane z kontami:
-class Account {
+class Account : public Observer {
 	public:
 		typedef int id_acc_t;
 		id_acc_t id() const;
@@ -243,6 +242,5 @@ class Gkb {
 		std::map<int, std::shared_ptr<ParametersBank> > map_parameters_bank;
 };
 #define gkb() Gkb::gkb()
-
 
 #endif /* defined(__gsb__bank__) */

@@ -1,13 +1,11 @@
 #include "planet.h"
 
-
 // Planet:
 Planet::Planet() {}
 
 Citizen& Planet::findCitizen (Citizen::id_citizen_t id) const {
-	throw NotFoundCitizen();  // bardziej sensowny wyjątek stworzyć.
+	throw NotFoundCitizen(); 
 }
-
 
 // Earth:
 Earth::Earth() : Planet(), map_resident() {}
@@ -68,4 +66,3 @@ Bynaus& Bynaus::bynaus() {
 	static Bynaus _bynaus;
 	return _bynaus;
 }
-

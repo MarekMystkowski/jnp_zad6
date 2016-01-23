@@ -15,7 +15,7 @@ class Citizen {
 	private:
 		const id_citizen_t my_id;
 		const std::string my_name;
-		static id_citizen_t new_id;   // pierwsze wolne id.
+		static id_citizen_t new_id;
 };
 
 

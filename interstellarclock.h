@@ -1,12 +1,12 @@
 #ifndef __gsb__interstellar_clock__
 #define __gsb__interstellar_clock__
-#include "bank.h"
+#include "observe.h"
 using Date = unsigned long long;
 using Time = unsigned short;
 class Account;
 // Czas międzyplanetarny liczymy z dokładnością do godziny.
 // Nowoutworzony zegar międzyplanetarny będzie wskazywał czas 0 i dzień 0.
-class InterstellarClock {
+class InterstellarClock : public Observable {
 public:
     // Doba międzyplanetarna ma 20 godzin (0-19).
     static const unsigned HOURS_IN_DAY = 20;
@@ -33,15 +33,10 @@ public:
 
     // Przesuwa zegar o miesiąc (miesiąc ma 30 dni).
     virtual InterstellarClock& nextMonth();
-    
-
-    virtual void registration_account(Account*);
 
 private:
     // liczba godzin od początku założenia ZFP
     unsigned long long _hours;
-    void notify() const;
-    std::map<int, Account*> observers;
 };
 
 InterstellarClock& interstellarClock();

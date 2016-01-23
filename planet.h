@@ -5,11 +5,10 @@
 #include <string>
 #include "citizen.h"
 #include <memory>
-#include <iostream>
 
 class NotFoundCitizen : public std::exception {
- public:
-  virtual const char* what() const throw() { return "Not found citizen"; }
+	public:
+		virtual const char* what() const throw() { return "Not found citizen"; }
 };
 
 class Planet {
@@ -17,12 +16,7 @@ class Planet {
 		virtual Citizen& findCitizen (Citizen::id_citizen_t id) const;
 		
 	protected: 
-	//	void register_citizen(const Citizen& citizen);	// Rejestruje w klasie Planet
 		Planet ();
-		
-//	private: 
-//		typedef std::shared_ptr<Citizen> map_value_t;
-//		std::map<Citizen::id_citizen_t, map_value_t > map_resident;
 };
 
 
